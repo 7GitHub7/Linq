@@ -1,0 +1,1 @@
+Repository contains exercises from "101 LINQ samples". 

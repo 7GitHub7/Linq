@@ -1,0 +1,161 @@
+Lab1
+
+_Restriction operators_
+
+1) ///////////LINQ query structure
+
+
+	int[] numbers = { 5, 4, 1, 3, 9, 8, 6, 7, 2, 0 };
+	var lowNums = numbers.Where(x => x < 5);              
+
+
+
+2) ///////////Filter elements on a property
+
+
+	List<Product> products = GetProductList();
+	var soldOutProducts = products.Where(x => x.UnitsInStock == 0 );
+
+
+3) ///////////Filter elements on multiple properties
+
+
+	List<Product> products = GetProductList();
+	var expensiveInStockProducts = products.Where(x => x.UnitsInStock > 0 && x.UnitPrice > 3000  );
+
+
+4) ///////////Examine a sequence property of output elements
+
+
+	List<Customer> customers = GetCustomerList();
+	var waCustomers = customers.Where(x => x.Region == "WA" );
+
+
+
+
+_Projection operators_
+
+
+1) ***********Select clause
+
+	var numsPlusOne = numbers.Select(x => x+1);
+
+2) ***********Select one property the input elements
+
+	var productNames = products.Select(x => x.ProductName);
+
+3) ***********Transform to an element of another sequence
+
+	var textNums = numbers.Select((n) => strings[n]); 
+
+4) ***********Select anonymous types or tuples
+
+	var upperLowerWords = words.Select(x => new { Upper = x.ToUpper(), Lower = x.ToLower() }); 
+	
+5) ***********Create new types with select
+	
+	var digitOddEvens = numbers.Select((n) => new {Digit = strings[n], Even = n % 2 == 0 });
+	
+6) ***********Select a subset of properties into a new type
+		
+	var productInfos = products.Select(productInfo => new  {ProductName = productInfo.ProductName, Category = productInfo.Category, Price = productInfo.UnitPrice }) ;                  
+
+7) ***********Select the index of source item
+
+	var numsInPlace = numbers.Select((num, index) => (Num: num, InPlace: (num == index)));
+	
+8) ***********Select combined with where
+
+	var lowNums = numbers.Where(x => x < 5 ).Select(x => digits[x]);
+		
+9) ***********Combine multiple input sequences
+
+	var pairs = numbersA.SelectMany(a => numbersB, (a, b) => new { a = a, b = b }).Where(p => p.a < p.b);
+	
+10) ***********Select from related input sequences
+
+	var orders = customers.SelectMany(c => c.Orders.Select(o => new { c.CustomerID, o.OrderID, o.Total }))
+			.Where(x => x.Total <= 500.00M);
+
+11) ***********Select multiple sequences with filters
+
+	var orders = customers.SelectMany(c => c.Orders.Select(o => new { c.CustomerID, o.OrderID, o.OrderDate}))
+			.Where(x => x.OrderDate > new DateTime(1998, 1, 1));
+			
+12/13) ***********Select from related sequences
+
+			var orders = customers.SelectMany(c => c.Orders.Select(o => new { c.CustomerID, o.OrderID, c.Region, o.OrderDate})).Where(x => x.Region =="WA" && x.OrderDate >= cutoffDate)
+			.Select(x => new {x.CustomerID,x.OrderID});
+
+
+13) ***********Select many with multiple filters
+	
+	...
+	
+14) ***********Select many with element index
+	
+	...
+
+
+Lab2
+
+\\\\\\\\\\\zad1
+
+	// nazwy i ceny jednostkowe wszystkich produktów,
+	List<Product> products = GetProductList();
+
+	var namesAndPrices = products.Select(x=> new {name = x.ProductName, price = x.UnitPrice});
+
+	Console.WriteLine("All products:");
+	foreach (var product in namesAndPrices)
+	{
+		Console.WriteLine($"Product: {product.name}, Price: {product.price}");
+	}
+
+
+\\\\\\\\\\\zad2
+
+	// nazwy produktów, które są na stanie, kosztują mniej niż 10 i należą do kategorii Seafood.
+
+	List<Product> products = GetProductList();
+
+	var names = products.Where(x=> x.UnitPrice < 10 && x.Category == "Seafood" && x.UnitsInStock != 0).Select(x=> x.ProductName);
+
+	Console.WriteLine("All products:");
+	foreach (var name in names)
+	{
+		Console.WriteLine($"Product: {name} ");
+	}
+
+\\\\\\\\\\\zad3
+
+	// produkty, których cena jednostkowa, jest równa cenie produktu o nazwie Ikura.
+
+	List<Product> products = GetProductList();
+
+	var ikuraPrice = products.Where(x => x.ProductName == "Ikura").Select(x => x.UnitPrice).ToList(); 
+	var names = products.Where(x => x.UnitPrice == ikuraPrice[0]);
+
+	Console.WriteLine("All products:");
+	foreach (var name in names)
+	{
+		Console.WriteLine($"Product: {name} ");
+	}
+
+\\\\\\\\\\\zad4(dawa rozwiązania)
+
+	// średnią cenę produktów w każdej kategorii (użyj group by).
+
+	List<Product> products = GetProductList();
+
+
+	var average = products.GroupBy(t => new  {Category = t.Category}).Select (g => new { Average = Math.Round(g.Average (p => p.UnitPrice),2), Name = g.Min(d => d.ProductName)});
+	var average1 = products.GroupBy(t => new  {Category = t.Category}).Select( x=> new { Kategoria = x.Key,Average = Math.Round(x.Average (p => p.UnitPrice),2) });
+
+
+	Console.WriteLine("All products:");
+	foreach (var t in average)
+	{
+		// Console.WriteLine($"Product: {t.Name}, {t.Average} ");
+		Console.WriteLine($"Product: {t} ");
+	}
